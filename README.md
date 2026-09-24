@@ -1,5 +1,28 @@
 # AI workspace
 
+## Layout
+
+```
+ai-workspace/
+├── README.md
+├── tsbuddy-ai/                  # Separate product repository
+├── learning/
+│   ├── inbox/                   # Course notes, links, transcripts
+│   ├── curriculum/              # Python + 12 cogs
+│   ├── exercises/               # Practice based on real project changes
+│   └── progress/                # Attempts and learning evidence
+├── career/
+│   ├── profile/
+│   ├── opportunities/
+│   └── interview-practice/
+└── learning-app/                # Future gamified learning app
+```
+
+`tsbuddy-ai/` and `learning-app/` are separate clones, ignored by this
+repository's git and synced through `repos.txt`. Everything under `learning/`
+and `career/` is tracked here; each of those folders keeps a `.gitkeep` so it
+survives a fresh clone while empty.
+
 ## Sync all repositories
 
 Run from any directory on this machine:
