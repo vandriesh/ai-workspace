@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# Sync independent repositories without stashing or creating commits.
+set -uo pipefail
+
+script_path="$(readlink -f "${BASH_SOURCE[0]}")"
+workspace="$(cd -- "$(dirname -- "$script_path")/.." && pwd -P)"
+action="${1:-pull}"
+case "$action" in
+  pull|push|status) ;;
+  *) printf 'Usage: ai-workspace [pull|push|status]\n' >&2; exit 2 ;;
+esac
+
+# Read before pulling the root, so this invocation uses one consistent list.
+mapfile -t repos < "$workspace/repos.txt"
+failed=0
+done_count=0
+skipped=0
+for relative in "${repos[@]}"; do
+  [[ -z "$relative" || "$relative" == \#* ]] && continue
+  repo="$workspace/$relative"
+  printf '\n[%s] %s\n' "$relative" "$action"
+  # A child folder must have its own .git; otherwise Git finds the parent repo.
+  if [[ ! -e "$repo/.git" ]]; then
+    printf 'SKIP: no repository here yet.\n'
+    skipped=$((skipped + 1))
+    continue
+  fi
+  if [[ "$action" == status ]]; then
+    if git -C "$repo" status --short --branch; then
+      done_count=$((done_count + 1))
+    else
+      failed=$((failed + 1))
+    fi
+    continue
+  fi
+  if ! branch="$(git -C "$repo" symbolic-ref --quiet --short HEAD)"; then
+    printf 'BLOCKED: detached HEAD.\n'
+    failed=$((failed + 1)); continue
+  fi
+  if ! git -C "$repo" rev-parse --verify '@{upstream}' >/dev/null 2>&1; then
+    printf 'BLOCKED: %s has no upstream.\n' "$branch"
+    failed=$((failed + 1)); continue
+  fi
+  if [[ "$action" == pull ]]; then
+    if ! dirty="$(git -C "$repo" status --porcelain)"; then
+      failed=$((failed + 1)); continue
+    fi
+    if [[ -n "$dirty" ]]; then
+      printf 'BLOCKED: uncommitted changes; commit or resolve them first.\n'
+      failed=$((failed + 1)); continue
+    fi
+    if git -C "$repo" pull --ff-only --no-rebase; then
+      done_count=$((done_count + 1))
+    else
+      printf 'FAILED: resolve the fetch or history problem manually.\n'
+      failed=$((failed + 1))
+    fi
+  else
+    remote="$(git -C "$repo" config --get "branch.$branch.remote")"
+    target="$(git -C "$repo" config --get "branch.$branch.merge")"
+    if [[ -z "$remote" || -z "$target" ]]; then
+      printf 'BLOCKED: upstream configuration is incomplete.\n'
+      failed=$((failed + 1)); continue
+    fi
+    if git -C "$repo" push "$remote" "HEAD:$target"; then
+      done_count=$((done_count + 1))
+    else
+      failed=$((failed + 1))
+    fi
+  fi
+done
+printf '\nSummary: %s completed, %s missing repositories, %s blocked/failed.\n' "$done_count" "$skipped" "$failed"
+[[ "$failed" -eq 0 && "$skipped" -eq 0 ]]

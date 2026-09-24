@@ -1,0 +1,4 @@
+# Paths relative to this workspace. Missing repositories are reported and skipped.
+.
+tsbuddy-ai
+learning-app
