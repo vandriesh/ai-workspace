@@ -43,7 +43,7 @@ repositories, but any missing or failed repository makes the command exit nonzer
 The command never creates commits, stashes changes, forces pushes or resets files.
 Push transfers existing commits only; it leaves uncommitted changes untouched.
 
-Install the CLI on another Linux machine after cloning this workspace:
+Install the CLI on another macOS or Linux machine after cloning this workspace:
 
 ```bash
 mkdir -p "$HOME/.local/bin"
@@ -51,4 +51,5 @@ ln -s "$HOME/ai-workspace/bin/ai-workspace" "$HOME/.local/bin/ai-workspace"
 ```
 
 Ensure `~/.local/bin` is on your PATH, or run `~/ai-workspace/bin/ai-workspace`
-directly. This Bash script uses GNU `readlink -f` and Bash `mapfile`.
+directly. The script runs on the Bash 3.2 that ships with macOS and needs
+nothing else installed; `readlink -f` requires macOS 12.3 or later.

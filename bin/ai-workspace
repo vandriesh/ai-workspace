@@ -11,11 +11,16 @@ case "$action" in
 esac
 
 # Read before pulling the root, so this invocation uses one consistent list.
-mapfile -t repos < "$workspace/repos.txt"
+# A read loop instead of mapfile, which macOS's Bash 3.2 does not have.
+repos=()
+while IFS= read -r line || [[ -n "$line" ]]; do
+  repos+=("$line")
+done < "$workspace/repos.txt"
 failed=0
 done_count=0
 skipped=0
-for relative in "${repos[@]}"; do
+# Bash 3.2 treats an empty "${repos[@]}" as unbound under set -u.
+for relative in ${repos[@]+"${repos[@]}"}; do
   [[ -z "$relative" || "$relative" == \#* ]] && continue
   repo="$workspace/$relative"
   printf '\n[%s] %s\n' "$relative" "$action"
