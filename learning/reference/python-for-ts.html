@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Python for TypeScript developers · Reference</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<p class="kicker">Reference · grows with every lesson</p>
+<h1>Python for TypeScript developers</h1>
+<p class="lede">Only what the lessons have taught, one row each: the Python, the TypeScript you already know, and where that instinct misleads.</p>
+
+<h2>Text and sets</h2>
+<p class="kicker">From <a href="../lessons/0001-score-a-doc-with-sets.html">Lesson 1</a></p>
+<table>
+  <thead><tr><th>Python</th><th>TypeScript</th><th>Watch out</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>WORD_RE.findall(s.lower())</code></td>
+      <td><code>s.toLowerCase().match(/[a-z0-9]+/g)</code></td>
+      <td>No match gives <code>[]</code>, never <code>None</code>. JS gives <code>null</code>. <a class="cite" href="https://docs.python.org/3/library/re.html#re.findall">re.findall</a></td>
+    </tr>
+    <tr>
+      <td><code>set(xs)</code></td>
+      <td><code>new Set(xs)</code></td>
+      <td>No order. <code>set("excel")</code> is the letters <code>{'e','x','c','l'}</code>. <a class="cite" href="https://docs.python.org/3/tutorial/datastructures.html#sets">Tutorial §5.4</a></td>
+    </tr>
+    <tr>
+      <td><code>{"a", "b"}</code> · <code>set()</code></td>
+      <td><code>new Set(["a", "b"])</code> · <code>new Set()</code></td>
+      <td><code>{}</code> is an empty <em>dict</em>. The empty set is only <code>set()</code>.</td>
+    </tr>
+    <tr>
+      <td><code>a &amp; b</code> · <code>a | b</code></td>
+      <td><code>[...a].filter(x =&gt; b.has(x))</code></td>
+      <td><code>&amp;</code> keeps what is in both; <code>|</code> keeps what is in either. <a class="cite" href="https://docs.python.org/3/library/stdtypes.html#set-types-set-frozenset">set types</a></td>
+    </tr>
+    <tr>
+      <td><code>len(x)</code></td>
+      <td><code>x.length</code> · <code>x.size</code></td>
+      <td>A function, and the same one for str, list, set and dict. <a class="cite" href="https://docs.python.org/3/library/functions.html#len">len</a></td>
+    </tr>
+    <tr>
+      <td><code>if not terms:</code></td>
+      <td><code>if (terms.size === 0)</code></td>
+      <td>Empty collections are falsy in Python. In JS, <code>[]</code> and <code>new Set()</code> are truthy. <a class="cite" href="https://docs.python.org/3/library/stdtypes.html#truth-value-testing">truth testing</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr>
+<footer>
+  <p>Lessons: <a href="../lessons/0001-score-a-doc-with-sets.html">1 · Score a doc with sets</a> · Map: <a href="cogs-map.html">the 12 cogs</a></p>
+</footer>
+
+</body>
+</html>

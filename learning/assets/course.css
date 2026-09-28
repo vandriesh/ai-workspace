@@ -1,0 +1,135 @@
+/* Shared stylesheet for every lesson and reference page. Tufte-leaning: one readable
+   column, generous margins, quiet colour, and pages that print cleanly. */
+
+:root {
+  --paper: #fffff8;
+  --ink: #1d1d1b;
+  --muted: #6b6a63;
+  --rule: #dcd9cc;
+  --code-bg: #f3f0e4;
+  --accent: #8a3b12;
+  --good: #2f6b3a;
+  --good-bg: #e6f0e3;
+  --bad: #9b2c2c;
+  --bad-bg: #f6e3e1;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Charter, Georgia, serif;
+  --mono: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1b1a17;
+    --ink: #e9e6da;
+    --muted: #a19f94;
+    --rule: #3a3832;
+    --code-bg: #262520;
+    --accent: #e0935f;
+    --good: #8cc79a;
+    --good-bg: #1f2e22;
+    --bad: #e59a95;
+    --bad-bg: #3a2322;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { background: var(--paper); color: var(--ink); }
+
+body {
+  margin: 0 auto;
+  max-width: 44rem;
+  padding: 3rem 1.5rem 5rem;
+  font: 1.125rem/1.6 var(--serif);
+}
+
+h1, h2, h3 { font-weight: 400; line-height: 1.2; }
+h1 { font-size: 2.4rem; margin: 0.2rem 0 0.8rem; }
+h2 { font-size: 1.5rem; margin: 2.8rem 0 0.6rem; font-style: italic; }
+h3 { font-size: 1.15rem; margin: 1.8rem 0 0.4rem; }
+
+p, ul, ol, table { margin: 0 0 1rem; }
+li { margin-bottom: 0.35rem; }
+
+a { color: var(--accent); text-underline-offset: 0.15em; }
+
+.kicker {
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0;
+}
+
+.lede { font-size: 1.25rem; color: var(--muted); }
+
+/* A citation: small, after the claim it backs. */
+.cite { font-size: 0.8rem; white-space: nowrap; }
+.cite::before { content: "↗ "; }
+
+code, pre, kbd { font-family: var(--mono); font-size: 0.86em; }
+:not(pre) > code { background: var(--code-bg); padding: 0.08em 0.3em; border-radius: 3px; }
+pre {
+  background: var(--code-bg);
+  padding: 0.9rem 1rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  line-height: 1.45;
+  margin: 0 0 1rem;
+}
+.comment { color: var(--muted); }
+
+table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+th, td { text-align: left; vertical-align: top; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--rule); }
+th { font-weight: 400; font-style: italic; color: var(--muted); }
+
+.callout {
+  border-left: 3px solid var(--accent);
+  padding: 0.2rem 0 0.2rem 1rem;
+  margin: 1.5rem 0;
+}
+.callout > :last-child { margin-bottom: 0; }
+
+details { margin: 0 0 1rem; }
+summary { cursor: pointer; color: var(--accent); }
+details[open] summary { margin-bottom: 0.5rem; }
+
+hr { border: 0; border-top: 1px solid var(--rule); margin: 3rem 0; }
+
+footer { font-size: 0.95rem; color: var(--muted); }
+
+/* Quiz component, driven by assets/quiz.js. */
+.quiz {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 1rem 1.1rem 0.6rem;
+  margin: 0 0 1.2rem;
+}
+.quiz legend { padding: 0 0.4rem; color: var(--muted); font-variant: small-caps; letter-spacing: 0.05em; }
+.quiz .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 0.5rem; margin: 0 0 0.8rem; }
+.quiz button {
+  font: 0.95rem var(--mono);
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 0.5rem 0.6rem;
+  cursor: pointer;
+}
+.quiz button:hover:not(:disabled) { border-color: var(--accent); }
+.quiz button:disabled { cursor: default; }
+.quiz button.correct { background: var(--good-bg); border-color: var(--good); color: var(--good); }
+.quiz button.wrong { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); text-decoration: line-through; }
+.quiz .why { font-size: 1rem; }
+.quiz .verdict { font-style: italic; }
+.quiz.got-it .verdict { color: var(--good); }
+.quiz.missed .verdict { color: var(--bad); }
+.quiz-tally { font-style: italic; color: var(--muted); }
+.quiz-tally button { font: inherit; margin-left: 0.6rem; background: none; border: 0; color: var(--accent); text-decoration: underline; cursor: pointer; }
+
+@media print {
+  html { background: #fff; color: #000; }
+  body { max-width: none; padding: 0; font-size: 11pt; }
+  a { color: inherit; }
+  .cite::after { content: " (" attr(href) ")"; }
+  pre, .quiz, table, .callout { break-inside: avoid; }
+  .quiz .why, .quiz-tally { display: none; }
+}

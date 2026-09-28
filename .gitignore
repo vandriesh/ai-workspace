@@ -2,3 +2,6 @@
 # Separate repositories
 /tsbuddy-ai/
 /learning-app/
+
+# Python bytecode from running exercises
+__pycache__/

@@ -6,11 +6,16 @@
 ai-workspace/
 ├── README.md
 ├── tsbuddy-ai/                  # Separate product repository
-├── learning/
-│   ├── inbox/                   # Course notes, links, transcripts
-│   ├── curriculum/              # Python + 12 cogs
-│   ├── exercises/               # Practice based on real project changes
-│   └── progress/                # Attempts and learning evidence
+├── learning/                    # Teaching workspace for Python AI engineering
+│   ├── MISSION.md               # Why, and what success looks like
+│   ├── RESOURCES.md             # Trusted sources and communities
+│   ├── NOTES.md                 # How I prefer to be taught
+│   ├── lessons/                 # One short HTML lesson per skill
+│   ├── reference/               # Cheat sheets and the 12 cogs map
+│   ├── exercises/               # Practice code, checked by tests
+│   ├── learning-records/        # What I have shown, not just covered
+│   ├── assets/                  # Shared lesson stylesheet and quiz widget
+│   └── inbox/                   # Course notes, links, transcripts
 ├── career/
 │   ├── profile/
 │   ├── opportunities/

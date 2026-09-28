@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 1 · Score a doc with sets</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+
+<p class="kicker">Lesson 1 · Cog 7, Retrieval · about 25 minutes</p>
+<h1>Score a doc with sets</h1>
+<p class="lede">By the end you will have written the scoring half of tsbuddy-ai's retrieval yourself, without AI, and a test suite will confirm it.</p>
+
+<h2>Why this function</h2>
+<p><code>Corpus.search</code> in <code>tsbuddy-ai/app/corpus.py</code> is the R in your RAG: it decides which help docs the model sees first. Its docstring calls it <em>“the v1 baseline that pgvector has to beat”</em>, so it is also the number your embeddings experiment will be judged against. “How does your retrieval work?” is an interview question; after this lesson you answer it from code you wrote.</p>
+<p>The whole algorithm, in words:</p>
+<ol>
+  <li>Turn the query into a set of lowercase words.</li>
+  <li>Do the same for the doc's title, summary and body.</li>
+  <li>Count the query words each field shares, weighted 3.0 for the title, 1.5 for the summary and 1.0 for the body.</li>
+  <li>Sort the docs by score and keep the top five. <em>(That's lesson 2.)</em></li>
+</ol>
+
+<h2>Five moves, from TypeScript</h2>
+
+<h3>1 · Split text into words</h3>
+<pre><code>WORD_RE = re.compile(r"[a-z0-9]+")
+WORD_RE.findall("Export to Excel!".lower())   <span class="comment"># ['export', 'to', 'excel']</span></code></pre>
+<p>That is <code>"Export to Excel!".toLowerCase().match(/[a-z0-9]+/g)</code>, with one difference: with no match, Python returns an empty list, where JS returns <code>null</code>. <a class="cite" href="https://docs.python.org/3/library/re.html#re.findall">re.findall</a> <a class="cite" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/match#return_value">MDN match</a> The <code>r"…"</code> prefix makes a raw string, so backslashes reach the regex untouched.</p>
+
+<h3>2 · Remove duplicates with a set</h3>
+<pre><code>set(["excel", "export", "excel"])   <span class="comment"># {'excel', 'export'}</span>
+{"excel", "export"}                 <span class="comment"># the same set, written literally</span>
+set()                               <span class="comment"># the empty set. {} is an empty dict!</span></code></pre>
+<p>Same idea as <code>new Set(…)</code>. A set has no order, so it may print in any order. <a class="cite" href="https://docs.python.org/3/tutorial/datastructures.html#sets">Tutorial §5.4</a></p>
+
+<h3>3 · Keep the shared words with <code>&amp;</code></h3>
+<pre><code>{"export", "excel"} &amp; {"excel", "csv"}   <span class="comment"># {'excel'}</span></code></pre>
+<p>In TypeScript you'd write <code>new Set([...a].filter(w =&gt; b.has(w)))</code>. <code>&amp;</code> is intersection, <code>|</code> is union. <a class="cite" href="https://docs.python.org/3/library/stdtypes.html#set-types-set-frozenset">set types</a></p>
+
+<h3>4 · Count with <code>len()</code></h3>
+<pre><code>len({"excel"})   <span class="comment"># 1</span></code></pre>
+<p>A function, not a <code>.length</code> or <code>.size</code> property, and the same function for strings, lists, sets and dicts. <a class="cite" href="https://docs.python.org/3/library/functions.html#len">len</a></p>
+
+<h3>5 · Empty means false</h3>
+<pre><code>terms = set(WORD_RE.findall(query.lower()))
+if not terms:
+    return []</code></pre>
+<p>This is the start of the real <code>search</code>. An empty set, list, dict or string is falsy, and so are <code>0</code> and <code>0.0</code>. The trap: in JS, <code>[]</code> and <code>new Set()</code> are <em>truthy</em>. <a class="cite" href="https://docs.python.org/3/library/stdtypes.html#truth-value-testing">truth testing</a></p>
+
+<h2>Check yourself</h2>
+<p>Predict the answer before clicking. Only your first click counts.</p>
+
+<fieldset class="quiz" data-correct="0">
+  <legend>Question 1</legend>
+  <pre><code>WORD_RE.findall("?!")</code></pre>
+  <div class="options"><button>[]</button><button>None</button><button>['']</button><button>['?!']</button></div>
+  <div class="why" hidden><p><code>findall</code> always returns a list; no matches gives an empty one. The JS habit of guarding against <code>null</code> doesn't apply here, and Python has no <code>??</code> anyway.</p></div>
+</fieldset>
+
+<fieldset class="quiz" data-correct="1">
+  <legend>Question 2</legend>
+  <pre><code>len({"excel", "export"} &amp; {"export", "csv", "excel"})</code></pre>
+  <div class="options"><button>1</button><button>2</button><button>3</button><button>5</button></div>
+  <div class="why" hidden><p><code>&amp;</code> keeps the words in both sets: <code>excel</code> and <code>export</code>. Union, <code>|</code>, would give 3.</p></div>
+</fieldset>
+
+<fieldset class="quiz" data-correct="2">
+  <legend>Question 3</legend>
+  <pre><code>len(set("excel"))</code></pre>
+  <div class="options"><button>0</button><button>1</button><button>4</button><button>5</button></div>
+  <div class="why" hidden><p>A string is a sequence of characters, so <code>set("excel")</code> is its letters: <code>e</code>, <code>x</code>, <code>c</code>, <code>l</code>, with the repeated <code>e</code> collapsed. For a one-word set, write <code>{"excel"}</code>. <code>set(query)</code> instead of <code>set(words)</code> is a real bug that raises no error; the tests catch it.</p></div>
+</fieldset>
+
+<fieldset class="quiz" data-correct="1">
+  <legend>Question 4</legend>
+  <p>Query <code>"export excel"</code>. Title <code>"export-to-excel Export to Excel"</code>. Summary <code>"Download your hours as an Excel file."</code>. The body is that summary followed by <code>"Open Reports and choose Export."</code> What is the score?</p>
+  <div class="options"><button>11.0</button><button>9.5</button><button>7.5</button><button>6.0</button></div>
+  <div class="why" hidden><p>The title shares 2 words: 2 × 3.0 = 6.0. The summary shares only <code>excel</code>: 1.5. The body shares both: 2 × 1.0 = 2.0. Total 9.5.</p></div>
+</fieldset>
+
+<fieldset class="quiz" data-correct="3">
+  <legend>Question 5</legend>
+  <p>Using the weights above, a doc titled <code>"Export"</code> (empty summary and body) gets what score for the query <code>"exports"</code>?</p>
+  <div class="options"><button>6.0</button><button>3.0</button><button>1.5</button><button>0.0</button></div>
+  <div class="why" hidden><p>Words are compared whole: <code>exports</code> is not <code>export</code>. There is no stemming, so a plural misses. It's a real weakness of this retrieval; keep it in mind for the interview question below.</p></div>
+</fieldset>
+
+<fieldset class="quiz" data-correct="0">
+  <legend>Question 6</legend>
+  <pre><code>bool(set())</code></pre>
+  <div class="options"><button>False</button><button>True</button><button>None</button><button>set()</button></div>
+  <div class="why" hidden><p>Empty collections are falsy, which is why <code>if not terms:</code> works. In JS, <code>Boolean(new Set())</code> is <code>true</code>.</p></div>
+</fieldset>
+
+<p class="quiz-tally"></p>
+
+<h2>Write it</h2>
+<div class="callout">
+  <p><strong>AI off.</strong> No agent, no autocomplete, and don't open <code>corpus.py</code> until you're green. The effort of recalling is what makes it stick. Stuck for more than ten minutes? Ask me for a hint, not the answer.</p>
+</div>
+<pre><code>cd ~/ai-workspace/learning/exercises/0001-keyword-score
+python3 test_score.py        <span class="comment"># 8 "todo" lines: expected</span></code></pre>
+<ol>
+  <li>Open <code>score.py</code>. Replace <code>raise NotImplementedError</code> in <code>words</code>, then in <code>score</code>.</li>
+  <li>Re-run after each change. A failing test prints what your code returned.</li>
+  <li>Done when it prints <strong>All green.</strong></li>
+</ol>
+<details>
+  <summary>Hint 1</summary>
+  <p><code>words</code> is one line: moves 1 and 2 together.</p>
+</details>
+<details>
+  <summary>Hint 2</summary>
+  <p>In <code>score</code>, call <code>words</code> four times, once for the query and once per field. Then the score is one expression using moves 3 and 4.</p>
+</details>
+
+<p>Once you're green, open <code>tsbuddy-ai/app/corpus.py</code> at the <code>search</code> method and find two things the real code does that yours doesn't. <em>(Look at what goes into the title, and at <code>if score:</code>.)</em></p>
+
+<h2>Say it out loud</h2>
+<p>Answer in about 60 seconds, out loud or in writing, as if in an interview:</p>
+<p><em>“How does tsbuddy-ai decide which docs the model reads? Name one weakness.”</em></p>
+<details>
+  <summary>What a strong answer covers</summary>
+  <ul>
+    <li>Keyword retrieval, with no vectors yet: the query and each doc become sets of lowercase words.</li>
+    <li>The score is how many query words each field shares: title ×3, summary ×1.5, body ×1. Ties are broken by doc id. The top five come back to the model as ids, titles and summaries, and the model calls <code>read_doc</code> for the full page: the agent does its own retrieval.</li>
+    <li>Why start here: it's cheap, deterministic and easy to explain, and it's the baseline embeddings must beat on the evals.</li>
+    <li>Weaknesses: no stemming (<code>exports</code> ≠ <code>export</code>), no synonyms (<code>download</code> vs <code>export</code>), no Romanian, word presence rather than frequency, and weights picked by hand rather than measured.</li>
+  </ul>
+</details>
+
+<h2>Go deeper</h2>
+<p>Primary source: <a href="https://docs.python.org/3/tutorial/datastructures.html">Python Tutorial §5, Data Structures</a>. Read §5.4 Sets and skim §5.1 Lists; about ten minutes. The full reading list is in <code>learning/RESOURCES.md</code>.</p>
+
+<div class="callout">
+  <p><strong>Ask me anything.</strong> Something unclear, a hint, “quiz me again” or “why does Python do it this way?”: just ask in chat. When you're green, tell me your quiz score and I'll review your <code>score.py</code> and record what you've shown.</p>
+</div>
+
+<hr>
+<footer>
+  <p><strong>Next:</strong> Lesson 2 ranks the docs (sort by score, break ties by id, keep five). Lesson 3 has you write the whole <code>search</code> from an empty file and swap it into tsbuddy-ai.</p>
+  <p>Reference: <a href="../reference/python-for-ts.html">Python for TypeScript developers</a> · <a href="../reference/cogs-map.html">The 12 cogs map</a></p>
+</footer>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>
