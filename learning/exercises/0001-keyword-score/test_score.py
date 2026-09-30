@@ -27,6 +27,13 @@ def test_each_field_earns_its_own_points():
     assert got == 5.5, got
 
 
+def test_the_fields_are_scored_independently():
+    # score() gets three separate strings. A summary word that the body lacks earns
+    # summary points only; the caller decides what goes in the body.
+    got = score("excel", title="", summary="Excel files.", body="")
+    assert got == 1.5, got
+
+
 def test_a_repeated_query_word_counts_once():
     got = score("excel excel", title="Excel", summary="", body="")
     assert got == 3.0, got

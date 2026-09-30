@@ -21,6 +21,7 @@
   <li>Count the query words each field shares, weighted 3.0 for the title, 1.5 for the summary and 1.0 for the body.</li>
   <li>Sort the docs by score and keep the top five. <em>(That's lesson 2.)</em></li>
 </ol>
+<p>One detail to hold on to: a doc has no separate summary. In tsbuddy-ai the summary is the <strong>first paragraph of the body</strong>, so the body always contains the summary text. A word in that first paragraph therefore scores in two fields, 1.5 for the summary and 1.0 for the body. That is deliberate: a doc that opens with the word outranks one that mentions it later. <code>score()</code> itself receives the three fields as separate strings and does not care where they came from.</p>
 
 <h2>Five moves, from TypeScript</h2>
 
@@ -75,9 +76,13 @@ if not terms:
 
 <fieldset class="quiz" data-correct="1">
   <legend>Question 4</legend>
-  <p>Query <code>"export excel"</code>. Title <code>"export-to-excel Export to Excel"</code>. Summary <code>"Download your hours as an Excel file."</code>. The body is that summary followed by <code>"Open Reports and choose Export."</code> What is the score?</p>
+  <p>Query <code>"export excel"</code>. The doc's three fields, as <code>score()</code> receives them:</p>
+  <pre><code>title   = "export-to-excel Export to Excel"
+summary = "Download your hours as an Excel file."
+body    = "Download your hours as an Excel file. Open Reports and choose Export."</code></pre>
+  <p>(The summary is the body's first paragraph, so the body starts with it.) What is the score?</p>
   <div class="options"><button>11.0</button><button>9.5</button><button>7.5</button><button>6.0</button></div>
-  <div class="why" hidden><p>The title shares 2 words: 2 × 3.0 = 6.0. The summary shares only <code>excel</code>: 1.5. The body shares both: 2 × 1.0 = 2.0. Total 9.5.</p></div>
+  <div class="why" hidden><p>The title shares 2 words: 2 × 3.0 = 6.0. The summary shares only <code>excel</code>: 1.5. The body shares both, <code>excel</code> from its first sentence and <code>export</code> from its last: 2 × 1.0 = 2.0. Total 9.5. Counting the body as only <code>"Open Reports and choose Export."</code> gives 8.5, because <code>excel</code> would be missed.</p></div>
 </fieldset>
 
 <fieldset class="quiz" data-correct="3">
