@@ -20,7 +20,7 @@ ai-workspace/
 │   ├── profile/
 │   ├── opportunities/
 │   └── interview-practice/
-└── learning-app/                # Future gamified learning app
+└── learning-app/                # The workshop app and its lessons: a step-by-step rebuild of tsbuddy-ai
 ```
 
 `tsbuddy-ai/` and `learning-app/` are separate clones, ignored by this
@@ -53,7 +53,11 @@ Install the CLI on another macOS or Linux machine after cloning this workspace:
 ```bash
 mkdir -p "$HOME/.local/bin"
 ln -s "$HOME/ai-workspace/bin/ai-workspace" "$HOME/.local/bin/ai-workspace"
+ln -s "$HOME/ai-workspace/learning-app/bin/workshop" "$HOME/.local/bin/workshop"
 ```
+
+The second link installs the workshop app's command; start a study session with
+`workshop`.
 
 Ensure `~/.local/bin` is on your PATH, or run `~/ai-workspace/bin/ai-workspace`
 directly. The script runs on the Bash 3.2 that ships with macOS and needs
